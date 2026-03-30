@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForensicCracker v2.0 — Password Recovery System</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Serif:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <div class="header-left">
+    <div class="header-logo">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect x="1" y="1" width="26" height="26" rx="2" stroke="#2c5f8a" stroke-width="1.5"/>
+        <path d="M7 14h14M14 7v14" stroke="#2c5f8a" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="3" stroke="#2c5f8a" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="header-title">ForensicCracker</div>
+      <div class="header-sub">Password Recovery and Analysis System &mdash; v2.0</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="session-badge" id="sessionBadge">No active session</div>
+    <button class="btn-secondary" onclick="openSessionModal()">New Session</button>
+  </div>
+</header>
+
+<!-- SIDEBAR + MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="nav-section-label">Analysis</div>
+    <a class="nav-item active" data-panel="panel-crack" onclick="showPanel('panel-crack', this)">
+      <svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 1a4 4 0 014 4c0 1.5-.8 2.8-2 3.5V10H6V8.5A4 4 0 018 1z" stroke="currentColor" stroke-width="1.2" fill="none"/><rect x="5" y="10" width="6" height="5" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+      Hash Cracking
+    </a>
+    <a class="nav-item" data-panel="panel-evidence" onclick="showPanel('panel-evidence', this)">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="1" width="10" height="13" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 5h6M5 8h6M5 11h3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/><path d="M10 1v4h4" stroke="currentColor" stroke-width="1.2" fill="none"/></svg>
+      Evidence Parser
+    </a>
+    <a class="nav-item" data-panel="panel-osint" onclick="showPanel('panel-osint', this)">
+      <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M8 2a9 9 0 010 12M8 2a9 9 0 000 12M2 8h12" stroke="currentColor" stroke-width="1.2"/></svg>
+      OSINT Wordlist
+    </a>
+    <a class="nav-item" data-panel="panel-batch" onclick="showPanel('panel-batch', this)">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="2" rx="1" fill="currentColor" opacity=".4"/><rect x="1" y="7" width="14" height="2" rx="1" fill="currentColor" opacity=".6"/><rect x="1" y="11" width="14" height="2" rx="1" fill="currentColor"/></svg>
+      Batch Analysis
+    </a>
+
+    <div class="nav-section-label" style="margin-top:24px">Intelligence</div>
+    <a class="nav-item" data-panel="panel-model" onclick="showPanel('panel-model', this)">
+      <svg width="16" height="16" viewBox="0 0 16 16"><circle cx="4" cy="8" r="2" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="12" cy="4" r="2" stroke="currentColor" stroke-width="1.2" fill="none"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M6 7.2L10 4.8M6 8.8L10 11.2" stroke="currentColor" stroke-width="1.2"/></svg>
+      AI Model Stats
+    </a>
+    <a class="nav-item" data-panel="panel-log" onclick="showPanel('panel-log', this)">
+      <svg width="16" height="16" viewBox="0 0 16 16"><rect x="2" y="2" width="12" height="12" rx="1" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Forensic Log
+    </a>
+
+    <div class="nav-section-label" style="margin-top:24px">Output</div>
+    <a class="nav-item" data-panel="panel-results" onclick="showPanel('panel-results', this)">
+      <svg width="16" height="16" viewBox="0 0 16 16"><polyline points="2,12 6,7 9,10 13,4" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Results
+    </a>
+    <a class="nav-item" onclick="downloadReport()">
+      <svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M2 12h12" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+      Export Report
+    </a>
+
+    <div class="sidebar-footer">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Idle</span>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- ── PANEL: HASH CRACKING ────────────────────────────────────────── -->
+    <section class="panel active" id="panel-crack">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">Hash Cracking</h1>
+          <p class="panel-desc">Submit a cryptographic hash for analysis and password recovery.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+
+        <!-- LEFT: Input -->
+        <div class="card">
+          <div class="card-label">Target Hash</div>
+
+          <div class="field-group">
+            <label class="field-label">Hash Value</label>
+            <textarea id="hashInput" class="hash-input" placeholder="Paste hash value here..." spellcheck="false" rows="3"></textarea>
+            <div class="field-hint">Supports MD5, SHA-1, SHA-256, SHA-512, bcrypt, NTLM, and more.</div>
+          </div>
+
+          <div id="hashInfo" class="hash-info hidden">
+            <div class="info-row"><span class="info-key">Type</span><span class="info-val" id="infoType">—</span></div>
+            <div class="info-row"><span class="info-key">Difficulty</span><span class="info-val" id="infoDiff">—</span></div>
+            <div class="info-row"><span class="info-key">Salted</span><span class="info-val" id="infoSalted">—</span></div>
+            <div class="info-row"><span class="info-key">GPU Resistant</span><span class="info-val" id="infoGpu">—</span></div>
+          </div>
+
+          <div class="field-group" style="margin-top:20px">
+            <label class="field-label">Attack Method</label>
+            <div class="method-grid" id="methodGrid">
+              <label class="method-card selected" data-method="1">
+                <input type="radio" name="method" value="1" checked hidden>
+                <div class="method-name">Dictionary</div>
+                <div class="method-desc">Wordlist-based, fastest for common passwords</div>
+              </label>
+              <label class="method-card" data-method="2">
+                <input type="radio" name="method" value="2" hidden>
+                <div class="method-name">Brute Force</div>
+                <div class="method-desc">Exhaustive search, configurable charset</div>
+              </label>
+              <label class="method-card" data-method="3">
+                <input type="radio" name="method" value="3" hidden>
+                <div class="method-name">Hybrid</div>
+                <div class="method-desc">Mutations, PCFG, Markov chain combined</div>
+              </label>
+              <label class="method-card" data-method="4">
+                <input type="radio" name="method" value="4" hidden>
+                <div class="method-name">AI Attack</div>
+                <div class="method-desc">Semantic groups, statistical generation</div>
+              </label>
+              <label class="method-card method-card-wide" data-method="5">
+                <input type="radio" name="method" value="5" hidden>
+                <div class="method-name">Ensemble</div>
+                <div class="method-desc">All methods race in parallel, fastest wins</div>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-row" id="bfOptions" style="display:none">
+            <div class="field-group" style="flex:1">
+              <label class="field-label">Max Length</label>
+              <input type="number" id="maxLen" class="field-input" value="6" min="1" max="10">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">AI Recommendation</label>
+            <div class="recommendation-box" id="recommendBox">
+              <div id="recommendText">Paste a hash above to get an AI recommendation.</div>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn-primary" id="crackBtn" onclick="startCrack()">Run Attack</button>
+            <button class="btn-ghost" onclick="clearCrack()">Clear</button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Live Output -->
+        <div class="card">
+          <div class="card-label">Attack Progress</div>
+
+          <div class="progress-area" id="progressArea">
+            <div class="progress-idle">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="18" stroke="#c8d4e0" stroke-width="1.5"/>
+                <path d="M20 12v8l5 3" stroke="#c8d4e0" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <p>No attack running.</p>
+            </div>
+          </div>
+
+          <div class="result-block hidden" id="resultBlock">
+            <div class="result-status" id="resultStatus"></div>
+            <div class="result-grid" id="resultGrid"></div>
+          </div>
+
+          <div class="log-box" id="logBox">
+            <div class="log-line log-info">System ready. Awaiting input.</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── PANEL: EVIDENCE PARSER ──────────────────────────────────────── -->
+    <section class="panel" id="panel-evidence">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">Evidence Parser</h1>
+          <p class="panel-desc">Extract password hashes from forensic evidence files.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Upload Evidence File</div>
+        <p class="field-hint" style="margin-bottom:16px">Supported formats: /etc/shadow, pwdump/NTLM dump, SQLite database, CSV with password columns.</p>
+
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('evidenceFile').click()">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <path d="M16 22V10M10 16l6-6 6 6" stroke="#7a94a8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="4" y="4" width="24" height="24" rx="2" stroke="#c8d4e0" stroke-width="1.5"/>
+          </svg>
+          <p>Click to select file or drag and drop</p>
+          <p class="field-hint">shadow &bull; pwdump &bull; .db &bull; .sqlite &bull; .csv</p>
+          <input type="file" id="evidenceFile" hidden onchange="handleEvidenceUpload(this)">
+        </div>
+
+        <div id="evidenceResults" class="hidden" style="margin-top:24px">
+          <div class="table-header">
+            <div class="card-label">Extracted Hashes</div>
+            <button class="btn-secondary" onclick="sendHashesToCracker()">Send All to Cracker</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="evidenceTable">
+              <thead>
+                <tr><th>Username</th><th>Hash</th><th>Type</th><th>Source</th><th>Action</th></tr>
+              </thead>
+              <tbody id="evidenceBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PANEL: OSINT WORDLIST ───────────────────────────────────────── -->
+    <section class="panel" id="panel-osint">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">OSINT Wordlist Builder</h1>
+          <p class="panel-desc">Generate a target-personalised wordlist from known subject attributes.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-label">Target Information</div>
+
+          <div class="field-group">
+            <label class="field-label">Full Name or Username</label>
+            <input type="text" id="osintName" class="field-input" placeholder="e.g. john.smith">
+          </div>
+          <div class="field-row">
+            <div class="field-group" style="flex:1">
+              <label class="field-label">Birth Year (optional)</label>
+              <input type="text" id="osintYear" class="field-input" placeholder="e.g. 1987">
+            </div>
+            <div class="field-group" style="flex:1">
+              <label class="field-label">City (optional)</label>
+              <input type="text" id="osintCity" class="field-input" placeholder="e.g. london">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group" style="flex:1">
+              <label class="field-label">Pet Name (optional)</label>
+              <input type="text" id="osintPet" class="field-input" placeholder="e.g. rex">
+            </div>
+            <div class="field-group" style="flex:1">
+              <label class="field-label">Company (optional)</label>
+              <input type="text" id="osintCompany" class="field-input" placeholder="e.g. acmecorp">
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn-primary" onclick="buildOsint()">Build Wordlist</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-label">Generation Output</div>
+          <div id="osintOutput" class="info-placeholder">
+            <p>Complete the form and click Build Wordlist.</p>
+            <p class="field-hint">The generated wordlist will be saved and available for use in the Hash Cracking panel.</p>
+          </div>
+          <div id="osintResult" class="hidden">
+            <div class="stat-row">
+              <div class="stat-block"><div class="stat-val" id="osintCount">0</div><div class="stat-key">Candidates</div></div>
+              <div class="stat-block"><div class="stat-val" id="osintTarget">—</div><div class="stat-key">Target</div></div>
+            </div>
+            <div class="info-row" style="margin-top:16px"><span class="info-key">Saved To</span><span class="info-val mono" id="osintPath">—</span></div>
+            <button class="btn-secondary" style="margin-top:16px" onclick="useOsintWordlist()">Use This Wordlist for Cracking</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PANEL: BATCH ANALYSIS ───────────────────────────────────────── -->
+    <section class="panel" id="panel-batch">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">Batch Analysis</h1>
+          <p class="panel-desc">Process multiple hashes sequentially with the same attack configuration.</p>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="card">
+          <div class="card-label">Hash List</div>
+          <div class="field-group">
+            <label class="field-label">Paste Hashes (one per line, or username:hash format)</label>
+            <textarea id="batchInput" class="hash-input" rows="10" placeholder="5f4dcc3b5aa765d61d8327deb882cf99&#10;admin:21232f297a57a5a743894a0e4a801fc3&#10;e10adc3949ba59abbe56e057f20f883e"></textarea>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Attack Method</label>
+            <select id="batchMethod" class="field-select">
+              <option value="1">Dictionary Attack</option>
+              <option value="3">Hybrid Attack</option>
+              <option value="4">AI Attack</option>
+              <option value="5">Ensemble (All)</option>
+            </select>
+          </div>
+          <div class="action-row">
+            <button class="btn-primary" onclick="runBatch()">Run Batch</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-label">Batch Progress</div>
+          <div id="batchProgress" class="info-placeholder">
+            <p>Submit hashes to begin batch processing.</p>
+          </div>
+          <div id="batchResults" class="hidden">
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead><tr><th>#</th><th>Hash</th><th>Type</th><th>Password</th><th>Time</th><th>Status</th></tr></thead>
+                <tbody id="batchBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PANEL: AI MODEL STATS ───────────────────────────────────────── -->
+    <section class="panel" id="panel-model">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">AI Model Statistics</h1>
+          <p class="panel-desc">UCB1 multi-armed bandit learning state and attack method performance.</p>
+        </div>
+        <button class="btn-secondary" onclick="loadModelStats()">Refresh</button>
+      </div>
+
+      <div class="card">
+        <div class="card-label">UCB1 Bandit — Attack Method Performance</div>
+        <p class="field-hint" style="margin-bottom:20px">The bandit learns which attack method is most successful across sessions and biases future recommendations accordingly.</p>
+        <div id="banditStats" class="stat-grid-4">
+          <div class="stat-block-lg"><div class="stat-val" id="s1">—</div><div class="stat-key">Dictionary</div><div class="stat-sub" id="s1sub">—</div></div>
+          <div class="stat-block-lg"><div class="stat-val" id="s2">—</div><div class="stat-key">Brute Force</div><div class="stat-sub" id="s2sub">—</div></div>
+          <div class="stat-block-lg"><div class="stat-val" id="s3">—</div><div class="stat-key">Hybrid</div><div class="stat-sub" id="s3sub">—</div></div>
+          <div class="stat-block-lg"><div class="stat-val" id="s4">—</div><div class="stat-key">AI Attack</div><div class="stat-sub" id="s4sub">—</div></div>
+        </div>
+
+        <div class="card-label" style="margin-top:32px">About the AI Components</div>
+        <div class="info-table">
+          <div class="info-row"><span class="info-key">PCFG Engine</span><span class="info-val">Probabilistic Context-Free Grammar — learns password structures from wordlist corpus</span></div>
+          <div class="info-row"><span class="info-key">Markov Chain</span><span class="info-val">Character-level trigram model — generates statistically realistic candidates</span></div>
+          <div class="info-row"><span class="info-key">Decision Tree</span><span class="info-val">Feature-engineered hash analysis — recommends attack method with confidence score</span></div>
+          <div class="info-row"><span class="info-key">UCB1 Bandit</span><span class="info-val">Online learning — adapts strategy selection based on historical success rates</span></div>
+          <div class="info-row"><span class="info-key">Bloom Filter</span><span class="info-val">O(1) deduplication — prevents re-hashing across all concurrent attack threads</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PANEL: FORENSIC LOG ─────────────────────────────────────────── -->
+    <section class="panel" id="panel-log">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">Forensic Log</h1>
+          <p class="panel-desc">HMAC-SHA256 chained audit trail for the current session.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Chain-of-Custody Log</div>
+        <p class="field-hint" style="margin-bottom:16px">Each entry is cryptographically signed and linked to the previous entry. Any post-session modification breaks the chain and is detectable on audit.</p>
+        <div class="terminal-box" id="forensicLog">
+          <div class="log-line log-info">Session log will appear here after running an attack.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PANEL: RESULTS ──────────────────────────────────────────────── -->
+    <section class="panel" id="panel-results">
+      <div class="panel-header">
+        <div>
+          <h1 class="panel-title">Session Results</h1>
+          <p class="panel-desc">All recovered passwords and analysis metrics for this session.</p>
+        </div>
+        <button class="btn-primary" onclick="downloadReport()">Export PDF Report</button>
+      </div>
+
+      <div class="card">
+        <div id="resultsEmpty" class="info-placeholder">
+          <p>No results yet. Run an attack to see results here.</p>
+        </div>
+        <div id="resultsTable" class="hidden">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Username</th><th>Hash Type</th><th>Method</th><th>Attempts</th><th>Time</th><th>Speed</th><th>Password</th></tr></thead>
+              <tbody id="resultsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- SESSION MODAL -->
+<div class="modal-overlay hidden" id="sessionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title">New Forensic Session</h2>
+      <button class="modal-close" onclick="closeSessionModal()">&times;</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">Case Identifier</label>
+      <input type="text" id="modalCaseId" class="field-input" placeholder="e.g. CASE-2025-001" value="CASE-001">
+    </div>
+    <div class="field-group">
+      <label class="field-label">Examining Officer</label>
+      <input type="text" id="modalExaminer" class="field-input" placeholder="Full name and badge/ID">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-ghost" onclick="closeSessionModal()">Cancel</button>
+      <button class="btn-primary" onclick="createSession()">Open Session</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
