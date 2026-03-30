@@ -1,0 +1,17 @@
+# ForensicCracker v2.0 — Requirements
+# =====================================
+
+# Web server (required for UI)
+flask>=3.0.0
+
+# PDF report generation (optional)
+reportlab>=4.0.0
+
+# Bcrypt hash support (optional)
+bcrypt>=4.0.0
+
+# Argon2 hash support (optional)
+argon2-cffi>=21.3.0
+
+# Install:
+# pip install flask reportlab bcrypt argon2-cffi
